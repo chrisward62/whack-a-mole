@@ -8,8 +8,9 @@ let score = 0;
 let gameRunning = false;
 
 const sound = new Audio("assets/smash.mp3");
+const missSound = new Audio("assets/missSound.mp3");
 
-function run(){
+function run() {
     if (!gameRunning) return;  // Stop running when the game isn't running
 
     const i = Math.floor(Math.random() * holes.length);
@@ -21,12 +22,17 @@ function run(){
     img.src = 'assets/mole.png';
 
     img.addEventListener('click', () => {
-        if (!gameRunning) return;  // Do nothing when the game isn't running
-
+        if (!gameRunning) return; 
+    
         score += 10;
         if (score >= 200) {
-            gameRunning = false;  // Stop the game
-            endScreen.style.display = 'block';  // Show end screen
+            gameRunning = false;
+    
+            // play a sound when game ends
+            const gameEndSound = new Audio("assets/gameEndSound.mp3");
+            gameEndSound.play();
+    
+            endScreen.style.display = 'block';
         }
         sound.play();
         scoreEl.textContent = score;
@@ -34,13 +40,19 @@ function run(){
         clearTimeout(timer);
         setTimeout(() => {
             hole.removeChild(img);
-            if (gameRunning) run();  // Run the next one only when the game is running
+            if (gameRunning) run();
         }, 500);
     });
 
     hole.appendChild(img);
 
     timer = setTimeout(() => {
+        if (!gameRunning) {
+            // Player missed, play the miss sound here
+            missSound.play();
+
+            // You can also deduct points from the score or perform other actions when a miss occurs
+        }
         hole.removeChild(img);
         if (gameRunning) run();  // Run the next one only when the game is running
     }, 1500);
@@ -79,4 +91,13 @@ window.addEventListener('mousedown', () => {
 
 window.addEventListener('mouseup', () => {
     cursor.classList.remove('active');
+
+});
+
+window.addEventListener('mousedown', (e) => {
+    if (!gameRunning) return;  // Do nothing when the game isn't running
+    let isMoleClicked = e.target.className === 'mole';
+    if (!isMoleClicked) {
+        missSound.play();
+    }
 });
